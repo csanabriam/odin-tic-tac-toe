@@ -1,15 +1,35 @@
-const gameboard = (()=>{
-    const board = [[,,],[,,],[,,]];
+const gameboard = (() => {
+    const grid = [[,,],[,,],[,,]],
+          spaces = document.querySelectorAll(".space");
+          turnOfPlayer = 0;
 
-    const displayBoard = (board) => {
-        // draw the board
+    const changePlayer = () => {
+        turnOfPlayer = turnOfPlayer ? 0 : 1;
     }
 
-    const play = (player, space) => {
-        // mark play
+    const updateGrid = (space) => {
+        let row = space[0],
+            column = space[1];
+        if (!(!!(grid[row][column]))) {
+            grid[row][column] = turnOfPlayer ? "O" : "X";
+            spaces[row*3+column].textContent = turnOfPlayer ? "O" : "X";
+        }
+        changePlayer();
     }
 
-    return {play};
+    const addClickListeners = () => {
+        for (let space = 0; space < 9; space++) {
+            let column = space % 3,
+                row = (space - column)/3;
+            spaces[space].addEventListener("click", () => updateGrid([row,column]));
+        }
+    }
+
+    return {addClickListeners, grid};
+})();
+
+const checkWinner = (() =>  {
+
 })();
 
 const Player = (player) => {
@@ -18,8 +38,3 @@ const Player = (player) => {
     return {getPlayer};
 };
 
-const spaces = document.querySelectorAll(".space");
-
-for (let i = 0; i < 9; i++) {
-    spaces[i].addEventListener("click", () => console.log(i))
-}
