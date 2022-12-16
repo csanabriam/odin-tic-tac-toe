@@ -1,0 +1,31 @@
+:root {
+    --space-width: 3rem;
+    --rail-width: 10px;
+    --mark-size: 1.5rem;
+}
+
+.board {
+    background-color: grey;;
+    display: grid;
+    grid-template-rows: repeat((3,3rem));
+    gap: var(--rail-width);
+    width: calc(var(--space-width) * 3 + var(--rail-width) * 2);
+}
+
+.row {
+    background-color: grey;
+    display: grid;
+    grid-template-columns: repeat(3,3rem);
+    gap: var(--rail-width);
+}
+
+.space {
+    background-color: white;
+    width: var(--space-width);
+    height: var(--space-width);
+    display: grid;
+    justify-items: center;
+    align-items: center;
+    font-size: var(--mark-size);
+}
+
