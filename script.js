@@ -1,13 +1,23 @@
 const gameboard = (() => {
     let grid = [[,,],[,,],[,,]],
         turnOfPlayer = 0;
+
+
     const spaces = document.querySelectorAll(".space");
 
     const _changePlayer = () => {
         turnOfPlayer = turnOfPlayer ? 0 : 1;
     }
 
-    const _updateGrid = (event) => {
+    const checkIfTurnOfCPU = () => {
+        if (turnOfPlayer === 0 && game.player1.isCPU) {
+            _cpuPlays()
+        } else if (turnOfPlayer === 1 && game.player2.isCPU) {
+            _cpuPlays()
+        }
+    }
+
+    const _play = (event) => {
         let row = +event.path[0].getAttribute("row"),
             column = +event.path[0].getAttribute("column");
         if (!(grid[row][column])) {
@@ -19,13 +29,24 @@ const gameboard = (() => {
         _changePlayer();
     }
 
-    const addClickListeners = () => {
+    const _cpuPlays = () => {
+        let [row, column] = ai.cpuPlays;
+        if (!(grid[row][column])) {
+            grid[row][column] = turnOfPlayer ? "O" : "X";
+            spaces[row*3+column].textContent = turnOfPlayer ? "⭕" : "❌";
+        }
+        
+        checkWinner.checkIfWinner(grid,turnOfPlayer);
+        _changePlayer();
+    }
+
+    const _addClickListeners = () => {
         for (let space = 0; space < 9; space++) {
             let column = space % 3,
                 row = (space - column)/3;
             spaces[space].setAttribute("row",row);
             spaces[space].setAttribute("column",column);
-            spaces[space].addEventListener("click", _updateGrid);
+            spaces[space].addEventListener("click", _play);
         }
     }
 
@@ -39,7 +60,7 @@ const gameboard = (() => {
         for (let space = 0; space < 9; space++) {
             let column = space % 3,
                 row = (space - column)/3;
-            spaces[space].removeEventListener("click", _updateGrid);
+            spaces[space].removeEventListener("click", _play);
         }
     }
 
@@ -50,9 +71,10 @@ const gameboard = (() => {
             spaces[space].classList.remove("won");
             spaces[space].textContent='';
         }
+        _addClickListeners();
     }
 
-    return {addClickListeners, markWinningSpaces, removeClickListeners, restartGrid, turnOfPlayer};
+    return {markWinningSpaces, removeClickListeners, restartGrid};
 })();
 
 const checkWinner = (() =>  {
@@ -62,7 +84,7 @@ const checkWinner = (() =>  {
         for (let i = 0; i < 3; i++) {
             if (grid[i][0]) {
                 if ((grid[i][0] === grid[i][1]) && (grid[i][0] === grid[i][2])) {
-                    winner = gameboard.turnOfPlayer+1;
+                    winner = turnOfPlayer+1;
                     gameboard.markWinningSpaces([[i,0],[i,1],[i,2]]);
                     break;
                 }
@@ -101,7 +123,6 @@ const checkWinner = (() =>  {
         if (!winner) {
             _checkRows(grid, turnOfPlayer)
         };
-        console.log(winner);
         if (!winner) {
             _checkColumns(grid, turnOfPlayer)
         };
@@ -118,7 +139,7 @@ const checkWinner = (() =>  {
         winner = 0;
     }
 
-    return {checkIfWinner, winner, restartWinner};
+    return {checkIfWinner, restartWinner};
 })();
 
 const display = (() => {
@@ -127,23 +148,24 @@ const display = (() => {
     const player2Name = document.querySelector("#player2");
     const display = document.querySelector(".display");
 
-    const setPlayersNames = () => {
+    const _setPlayersNames = () => {
         player1Name.value = game.player1.name;
         player2Name.value = game.player2.name;
         headerForm.onkeydown = (event) => {
             if (event.keyCode == 13) {
-                setNewPlayersNames();
+                _setNewPlayersNames();
             }
         }
-        headerForm.addEventListener("focusout", setNewPlayersNames);
+        headerForm.addEventListener("focusout", _setNewPlayersNames);
     }
 
-    const setNewPlayersNames = () => {
+    const _setNewPlayersNames = () => {
         const names = new FormData(headerForm);
         game.player1.name = names.get("player1");
         game.player2.name = names.get("player2");
         player1Name.value = game.player1.name;
         player2Name.value = game.player2.name;
+        
     }
 
     const displayWinner = (winner) => {
@@ -156,26 +178,46 @@ const display = (() => {
 
     const resetDisplay = () => {
         display.textContent = '';
+        _setPlayersNames();
     }
 
-    return {setPlayersNames, displayWinner, resetDisplay};
+    return {displayWinner, resetDisplay};
 })();
 
 const playerFactory = (name) => {
-    return {name};
+    let isCPU = false
+    return {name, isCPU};
 };
+
+const ai = ( () => {
+
+    const randomSpace = () => {
+        return Math.floor(9*Math.random());
+    }
+
+    const cpuPlays = () => {
+        let cpuPlaysIn = randomSpace(),
+            column = cpuPlaysIn % 3,
+            row = (cpuPlaysIn - column) / 3;
+        while (gameboard.grid[row][column]) {
+            cpuPlaysIn = randomSpace();
+            column = cpuPlaysIn % 3;
+            row = (cpuPlaysIn - column) / 3;
+        }
+        return [row,column]
+    }
+
+    return {cpuPlays};
+})()
 
 const game = ( () => {
     const player1 = playerFactory("Player 1");
     const player2 = playerFactory("Player 2");
 
     const init = () => {
-        display.setPlayersNames();
+        display.resetDisplay();
         gameboard.restartGrid();
         checkWinner.restartWinner();
-        display.resetDisplay();
-        gameboard.addClickListeners();
-
     }
 
     const stop = () => {
