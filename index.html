@@ -8,23 +8,41 @@
     <title>Tic-tac-toe</title>
 </head>
 <body>
-    <div class="board">
-        <div class="row">
-            <div class="space"></div>
-            <div class="space"></div>
-            <div class="space"></div>
-        </div>
-        <div class="row">
-            <div class="space"></div>
-            <div class="space"></div>
-            <div class="space"></div>
-        </div>
-        <div class="row">
-            <div class="space"></div>
-            <div class="space"></div>
-            <div class="space"></div>
+    <header>
+        <form class="header" action="" method="post">
+            <div class="player1">
+                <input type="text" id="player1" name="player1">
+                <label for="player1">❌</label>
+            </div>
+            <div class="vs">vs</div>
+            <div class="player2">
+                <label for="player2">⭕</label>
+                <input type="text" id="player2" name="player2">
+            </div>
+        </form>
+    </header>
+    <div class="container">
+        <div class="board">
+            <div class="row">
+                <div class="space"></div>
+                <div class="space"></div>
+                <div class="space"></div>
+            </div>
+            <div class="row">
+                <div class="space"></div>
+                <div class="space"></div>
+                <div class="space"></div>
+            </div>
+            <div class="row">
+                <div class="space"></div>
+                <div class="space"></div>
+                <div class="space"></div>
+            </div>
         </div>
     </div>
+    <footer>
+        <button>START / RESTART</button>
+        <div class="display"></div>
     <script src="script.js"></script>
 </body>
 </html>

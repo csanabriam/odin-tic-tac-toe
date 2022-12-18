@@ -1,13 +1,21 @@
 :root {
-    --space-width: 3rem;
-    --rail-width: 10px;
-    --mark-size: 1.5rem;
+    --space-width: 4rem;
+    --rail-width: 15px;
+    --mark-size: 3rem;
+    --winning-border-width: 5px;
+}
+
+.container {
+    display: grid;
+    justify-items: center;
+    align-items: center;
+    margin: var(--mark-size);
 }
 
 .board {
     background-color: grey;;
     display: grid;
-    grid-template-rows: repeat((3,3rem));
+    grid-template-rows: repeat((3,var(--space-width)));
     gap: var(--rail-width);
     width: calc(var(--space-width) * 3 + var(--rail-width) * 2);
 }
@@ -15,7 +23,7 @@
 .row {
     background-color: grey;
     display: grid;
-    grid-template-columns: repeat(3,3rem);
+    grid-template-columns: repeat(3,var(--space-width));
     gap: var(--rail-width);
 }
 
@@ -28,4 +36,77 @@
     align-items: center;
     font-size: var(--mark-size);
 }
+
+.won {
+    border: var(--winning-border-width) black solid;
+    /* border-radius: calc(var(--mark-size)/2); */
+    margin: calc((-1)*var(--winning-border-width));
+}
+
+.header {
+    display: grid;
+    grid-template-columns: 5fr 1fr 5fr;
+    justify-content: center;
+    align-content: center;
+    gap: var(--rail-width);
+    font-size: var(--mark-size);
+    color: gray;
+}
+
+#player1,
+#player2 {
+    font-size: calc(var(--mark-size)*1);
+    width: calc(4*var(--mark-size));
+    border: none;
+}
+
+.player1,
+.player2 {
+    display: flex;
+    /* display: grid; */
+    /* grid-template-columns: auto auto; */
+    gap: var(--rail-width);
+}
+
+.vs {
+    display: grid;
+    justify-content: center;
+}
+
+.player1 {
+    justify-content: right;
+}
+
+.player2 {
+    justify-content: left;
+}
+
+
+#player1 {
+    text-align: right;
+}
+
+#player2 {
+    text-align: left;
+}
+
+footer {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+}
+
+button {
+    font-size: var(--mark-size);
+    padding: 0 var(--mark-size);
+}
+
+.display {
+    font-size: var(--mark-size);
+    display: grid;
+    justify-content: center;
+    align-content: center;
+}
+
+
 
