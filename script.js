@@ -38,16 +38,18 @@ const gameboard = (() => {
     }
 
     const _cpuPlays = () => {
-        let [row, column] = ai.cpuPlays();
-        if (!(grid[row][column])) {
-            grid[row][column] = turnOfPlayer ? "O" : "X";
-            spaces[row*3+column].textContent = turnOfPlayer ? "⭕" : "❌";
-        }
-        
-        thereIsAWinner = checkWinner.checkIfWinner(grid,turnOfPlayer);
         if (!thereIsAWinner) {
-            _changePlayer();
-            checkIfTurnOfCPU();
+            let [row, column] = ai.cpuPlays();
+            if (!(grid[row][column])) {
+                grid[row][column] = turnOfPlayer ? "O" : "X";
+                spaces[row*3+column].textContent = turnOfPlayer ? "⭕" : "❌";
+            }
+            
+            thereIsAWinner = checkWinner.checkIfWinner(grid,turnOfPlayer);
+            if (!thereIsAWinner) {
+                _changePlayer();
+                checkIfTurnOfCPU();
+            }
         }
     }
 
@@ -83,6 +85,7 @@ const gameboard = (() => {
             spaces[space].textContent='';
         }
         _addClickListeners();
+        thereIsAWinner = false;
     }
 
     return {markWinningSpaces, removeClickListeners, restartGrid, checkIfTurnOfCPU, checkIfSpaceIsMarked};
@@ -203,6 +206,7 @@ const display = (() => {
     const resetDisplay = () => {
         display.textContent = '';
         _setPlayersNames();
+        _setNewPlayersNames();
     }
 
     return {displayWinner, resetDisplay};
@@ -228,7 +232,6 @@ const ai = ( () => {
             column = cpuPlaysIn % 3;
             row = (cpuPlaysIn - column) / 3;
         }
-        console.log([row,column]);
         return [row,column];
     }
 
@@ -240,10 +243,10 @@ const game = ( () => {
     const player2 = playerFactory("Player 2");
 
     const init = () => {
-        display.resetDisplay();
         checkWinner.restartWinner();
         gameboard.restartGrid();
-        gameboard.checkIfTurnOfCPU();
+        display.resetDisplay();
+        // gameboard.checkIfTurnOfCPU();
     }
 
     const stop = () => {
