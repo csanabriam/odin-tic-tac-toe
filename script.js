@@ -1,6 +1,7 @@
 const gameboard = (() => {
     let grid = [[,,],[,,],[,,]],
-        turnOfPlayer = 0;
+        turnOfPlayer = 0,
+        thereIsAWinner = false;
 
 
     const spaces = document.querySelectorAll(".space");
@@ -17,6 +18,10 @@ const gameboard = (() => {
         }
     }
 
+    const checkIfSpaceIsMarked = ([row,column]) => {
+        return grid[row][column] ? true : false;
+    }
+
     const _play = (event) => {
         let row = +event.path[0].getAttribute("row"),
             column = +event.path[0].getAttribute("column");
@@ -25,19 +30,25 @@ const gameboard = (() => {
             spaces[row*3+column].textContent = turnOfPlayer ? "⭕" : "❌";
         }
         
-        checkWinner.checkIfWinner(grid,turnOfPlayer);
-        _changePlayer();
+        thereIsAWinner = checkWinner.checkIfWinner(grid,turnOfPlayer);
+        if (!thereIsAWinner) {
+            _changePlayer();
+            checkIfTurnOfCPU();
+        }
     }
 
     const _cpuPlays = () => {
-        let [row, column] = ai.cpuPlays;
+        let [row, column] = ai.cpuPlays();
         if (!(grid[row][column])) {
             grid[row][column] = turnOfPlayer ? "O" : "X";
             spaces[row*3+column].textContent = turnOfPlayer ? "⭕" : "❌";
         }
         
-        checkWinner.checkIfWinner(grid,turnOfPlayer);
-        _changePlayer();
+        thereIsAWinner = checkWinner.checkIfWinner(grid,turnOfPlayer);
+        if (!thereIsAWinner) {
+            _changePlayer();
+            checkIfTurnOfCPU();
+        }
     }
 
     const _addClickListeners = () => {
@@ -74,7 +85,7 @@ const gameboard = (() => {
         _addClickListeners();
     }
 
-    return {markWinningSpaces, removeClickListeners, restartGrid};
+    return {markWinningSpaces, removeClickListeners, restartGrid, checkIfTurnOfCPU, checkIfSpaceIsMarked};
 })();
 
 const checkWinner = (() =>  {
@@ -121,17 +132,20 @@ const checkWinner = (() =>  {
 
     const checkIfWinner = (grid, turnOfPlayer) => {
         if (!winner) {
-            _checkRows(grid, turnOfPlayer)
+            _checkRows(grid, turnOfPlayer);
         };
         if (!winner) {
-            _checkColumns(grid, turnOfPlayer)
+            _checkColumns(grid, turnOfPlayer);
         };
         if (!winner) {
-            _checkDiagonals(grid, turnOfPlayer)
+            _checkDiagonals(grid, turnOfPlayer);
         };
         if (winner) {
             display.displayWinner(winner);
             game.stop();
+            return true;
+        } else {
+            return false;
         };
     }
 
@@ -165,7 +179,17 @@ const display = (() => {
         game.player2.name = names.get("player2");
         player1Name.value = game.player1.name;
         player2Name.value = game.player2.name;
-        
+        if (game.player1.name.toLowerCase() === "cpu") {
+            game.player1.isCPU = true
+        } else {
+            game.player1.isCPU = false
+        }
+        if (game.player2.name.toLowerCase() === "cpu") {
+            game.player2.isCPU = true
+        } else {
+            game.player2.isCPU = false
+        }
+        gameboard.checkIfTurnOfCPU();
     }
 
     const displayWinner = (winner) => {
@@ -191,20 +215,21 @@ const playerFactory = (name) => {
 
 const ai = ( () => {
 
-    const randomSpace = () => {
+    const _randomSpace = () => {
         return Math.floor(9*Math.random());
     }
 
     const cpuPlays = () => {
-        let cpuPlaysIn = randomSpace(),
+        let cpuPlaysIn = _randomSpace(),
             column = cpuPlaysIn % 3,
             row = (cpuPlaysIn - column) / 3;
-        while (gameboard.grid[row][column]) {
-            cpuPlaysIn = randomSpace();
+        while (gameboard.checkIfSpaceIsMarked([row,column])) {
+            cpuPlaysIn = _randomSpace();
             column = cpuPlaysIn % 3;
             row = (cpuPlaysIn - column) / 3;
         }
-        return [row,column]
+        console.log([row,column]);
+        return [row,column];
     }
 
     return {cpuPlays};
@@ -216,8 +241,9 @@ const game = ( () => {
 
     const init = () => {
         display.resetDisplay();
-        gameboard.restartGrid();
         checkWinner.restartWinner();
+        gameboard.restartGrid();
+        gameboard.checkIfTurnOfCPU();
     }
 
     const stop = () => {
