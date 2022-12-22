@@ -1,5 +1,5 @@
 const gameboard = (() => {
-    let grid = [[,,],[,,],[,,]],
+    let grid = [['','',''],['','',''],['','','']],
         turnOfPlayer = 0,
         thereIsAWinner = false;
 
@@ -23,8 +23,8 @@ const gameboard = (() => {
     }
 
     const _play = (event) => {
-        let row = +event.path[0].getAttribute("row"),
-            column = +event.path[0].getAttribute("column");
+        let row = +event.composedPath()[0].getAttribute("row"),
+            column = +event.composedPath()[0].getAttribute("column");
         if (!(grid[row][column])) {
             grid[row][column] = turnOfPlayer ? "O" : "X";
             spaces[row*3+column].textContent = turnOfPlayer ? "⭕" : "❌";
@@ -78,7 +78,7 @@ const gameboard = (() => {
     }
 
     const restartGrid = () => {
-        grid = [[,,],[,,],[,,]];
+        grid = [['','',''],['','',''],['','','']];
         turnOfPlayer = 0;
         for (let space = 0; space < 9; space++) {
             spaces[space].classList.remove("won");
@@ -88,7 +88,11 @@ const gameboard = (() => {
         thereIsAWinner = false;
     }
 
-    return {markWinningSpaces, removeClickListeners, restartGrid, checkIfTurnOfCPU, checkIfSpaceIsMarked};
+    const returnGrid = () => {
+        return grid;
+    }
+
+    return {markWinningSpaces, removeClickListeners, restartGrid, checkIfTurnOfCPU, checkIfSpaceIsMarked, returnGrid};
 })();
 
 const checkWinner = (() =>  {
@@ -235,7 +239,157 @@ const ai = ( () => {
         return [row,column];
     }
 
-    return {cpuPlays};
+    let thereIsAPhantomWinner = false,
+        turnOfPhantomPlayer = 0;
+
+    // const phantomGridFactory = (grid,phantomRequester) => {
+    //     let phantomTurnOfPlayer = 0,
+    //         phantomWinner = false,
+    //         phantomDepthOfGrid = 0;
+    //         phantomChildren = [];
+            
+    //     for (let space = 0; space < 9; space++) {
+    //         let column = space % 3;
+    //         let row = (space - column)/3;
+    //         if (grid[row][column]) {
+    //             phantomDepthOfGrid++;
+    //         }
+    //     }
+
+    //     const phantomPlay = ([row, column]) => {
+    //         grid[row][column] = phantomTurnOfPlayer ? "O" : "X";
+    //     }
+
+    //     const checkIfPhantomWinner = () => {
+    //         for (let i = 0; i < 3; i++) {
+    //             if (grid[i][0]) {
+    //                 if ((grid[i][0] === grid[i][1]) && (grid[i][0] === grid[i][2])) {
+    //                     return true;
+    //                 }
+    //             }
+    //         }
+    //         for (let j = 0; j < 3; j++) {
+    //             if (grid[0][j]) {
+    //                 if ((grid[0][j] === grid[1][j]) && (grid[0][j] === grid[2][j])) {
+    //                     return true;
+    //                 }
+    //             }
+    //         }
+    //         if (grid[0][0]) {
+    //             if ((grid[0][0] === grid[1][1]) && (grid[0][0] === grid[2][2])) {
+    //                 return true;
+    //             }
+    //         }
+    //         if (grid[0][2]) {
+    //             if ((grid[0][2] === grid[1][1]) && (grid[0][2] === grid[2][0])) {
+    //                 return true;
+    //             }
+    //         }
+    //         return false;
+    //     }
+
+    //     const addChildren = (childrenToAdd) => {
+    //         phantomChildren = phantomChildren.concat(childrenToAdd);
+    //     }
+
+    //     const returnGrid = () => {
+    //         return grid;
+    //     }
+
+    //     return {grid, phantomTurnOfPlayer, phantomWinner, phantomDepthOfGrid, phantomRequester, phantomChildren, returnGrid, phantomPlay, checkIfPhantomWinner,addChildren};
+    // };
+
+    const phantomGridProto = {
+        phantomDepth : 0,
+        
+        setDepth() {
+            for (let space = 0; space < 9; space++) {
+                let column = space % 3;
+                let row = (space - column)/3;
+                if (this.grid[row][column]) {
+                    this.phantomDepth++;
+                }
+            }
+        },
+
+        phantomPlay ([row, column]) {
+            this.grid[row][column] = this.phantomTurnOfPlayer ? "O" : "X";
+            this.phantomTurnOfPlayer = this.phantomTurnOfPlayer ? 0 : 1;
+        },
+
+        checkIfPhantomWinner () {
+            for (let i = 0; i < 3; i++) {
+                if (this.grid[i][0]) {
+                    if ((this.grid[i][0] === this.grid[i][1]) && (this.grid[i][0] === this.grid[i][2])) {
+                        this.winnerIs = this.phantomTurnOfPlayer ? 0 : 1;
+                        return true;
+                    }
+                }
+            }
+            for (let j = 0; j < 3; j++) {
+                if (this.grid[0][j]) {
+                    if ((this.grid[0][j] === this.grid[1][j]) && (this.grid[0][j] === this.grid[2][j])) {
+                        this.winnerIs = this.phantomTurnOfPlayer ? 0 : 1;
+                        return true;
+                    }
+                }
+            }
+            if (this.grid[0][0]) {
+                if ((this.grid[0][0] === this.grid[1][1]) && (this.grid[0][0] === this.grid[2][2])) {
+                    this.winnerIs = this.phantomTurnOfPlayer ? 0 : 1;
+                    return true;
+                }
+            }
+            if (this.grid[0][2]) {
+                if ((this.grid[0][2] === this.grid[1][1]) && (this.grid[0][2] === this.grid[2][0])) {
+                    this.winnerIs = this.phantomTurnOfPlayer ? 0 : 1;
+                    return true;
+                }
+            }
+            return false;
+        },
+
+        checkIfFull () {
+            let isFull = true;
+
+            for (let space = 0; space < 9; space++) {
+                let column = space % 3;
+                let row = (space - column)/3;
+                if (this.grid[row][column] === '') {
+                    isFull = false;
+                }
+            }
+
+            return isFull;
+        }
+    };
+
+    const phantomPlays = (grid, requester, phantomTurnOfPlayer) => {
+        let children = [];
+        
+        for (let space = 0; space < 9; space++) {
+            let column = space % 3;
+            let row = (space - column)/3;
+            if (!(grid[row][column])) {
+                let newPhantomGrid = [];
+                for (let i = 0; i < 3; i++) {
+                    newPhantomGrid.push(Array.from(grid[i]))
+                }
+                const phantomGrid = Object.assign({}, phantomGridProto, {grid: newPhantomGrid, requester, phantomTurnOfPlayer});
+                phantomGrid.phantomPlay([row,column]);
+                phantomGrid.setDepth();
+                if (!phantomGrid.checkIfPhantomWinner() && !phantomGrid.checkIfFull()) {
+                    children = children.concat(phantomPlays(phantomGrid.grid, requester, phantomGrid.phantomTurnOfPlayer));
+                } else {
+                    children = children.concat([phantomGrid]);
+                }
+            }
+        }
+        
+        return children;
+    }
+
+    return {cpuPlays, phantomPlays};
 })()
 
 const game = ( () => {
@@ -246,7 +400,6 @@ const game = ( () => {
         checkWinner.restartWinner();
         gameboard.restartGrid();
         display.resetDisplay();
-        // gameboard.checkIfTurnOfCPU();
     }
 
     const stop = () => {
