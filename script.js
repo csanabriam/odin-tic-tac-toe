@@ -6,7 +6,8 @@ const factorial = (n) => {
 const gameboard = (() => {
     let grid = [['','',''],['','',''],['','','']],
         turnOfPlayer = 0,
-        thereIsAWinner = false;
+        thereIsAWinner = false,
+        turn = 0;
 
 
     const spaces = document.querySelectorAll(".space");
@@ -33,6 +34,7 @@ const gameboard = (() => {
         if (!(grid[row][column])) {
             grid[row][column] = turnOfPlayer ? "O" : "X";
             spaces[row*3+column].textContent = turnOfPlayer ? "⭕" : "❌";
+            turn++;
         }
         
         thereIsAWinner = checkWinner.checkIfWinner(grid,turnOfPlayer);
@@ -44,10 +46,11 @@ const gameboard = (() => {
 
     const _cpuPlays = () => {
         if (!thereIsAWinner) {
-            let [row, column] = ai.cpuPlays();
+            let [row, column] = ai.cpuPlays(turnOfPlayer, turn);
             if (!(grid[row][column])) {
                 grid[row][column] = turnOfPlayer ? "O" : "X";
                 spaces[row*3+column].textContent = turnOfPlayer ? "⭕" : "❌";
+                turn++
             }
             
             thereIsAWinner = checkWinner.checkIfWinner(grid,turnOfPlayer);
@@ -232,77 +235,28 @@ const ai = ( () => {
         return Math.floor(9*Math.random());
     }
 
-    const cpuPlays = () => {
-        let cpuPlaysIn = _randomSpace(),
-            column = cpuPlaysIn % 3,
-            row = (cpuPlaysIn - column) / 3;
-        while (gameboard.checkIfSpaceIsMarked([row,column])) {
-            cpuPlaysIn = _randomSpace();
-            column = cpuPlaysIn % 3;
-            row = (cpuPlaysIn - column) / 3;
-        }
-        return [row,column];
+    const cpuPlays = (turnOfPlayer, turn) => {
+        let [possibleDecisions, decisionsDamage] =  ai.weightPossibleMoves(Array.from(gameboard.returnGrid()),turnOfPlayer,turnOfPlayer,turn),
+            space = possibleDecisions[decisionsDamage.indexOf(Math.min(...decisionsDamage))],
+            column = space % 3;
+            row = (space - column) / 3;
+
+        return [row, column];
+        // ******* Old code where the CPU plays a random move*******
+        // let cpuPlaysIn = _randomSpace(),
+        //     column = cpuPlaysIn % 3,
+        //     row = (cpuPlaysIn - column) / 3;
+        // while (gameboard.checkIfSpaceIsMarked([row,column])) {
+        //     cpuPlaysIn = _randomSpace();
+        //     column = cpuPlaysIn % 3;
+        //     row = (cpuPlaysIn - column) / 3;
+        // }
+        // return [row,column];
+        // **********************************************************
     }
 
     let thereIsAPhantomWinner = false,
         turnOfPhantomPlayer = 0;
-
-    // const phantomGridFactory = (grid,phantomRequester) => {
-    //     let phantomTurnOfPlayer = 0,
-    //         phantomWinner = false,
-    //         phantomDepthOfGrid = 0;
-    //         phantomChildren = [];
-            
-    //     for (let space = 0; space < 9; space++) {
-    //         let column = space % 3;
-    //         let row = (space - column)/3;
-    //         if (grid[row][column]) {
-    //             phantomDepthOfGrid++;
-    //         }
-    //     }
-
-    //     const phantomPlay = ([row, column]) => {
-    //         grid[row][column] = phantomTurnOfPlayer ? "O" : "X";
-    //     }
-
-    //     const checkIfPhantomWinner = () => {
-    //         for (let i = 0; i < 3; i++) {
-    //             if (grid[i][0]) {
-    //                 if ((grid[i][0] === grid[i][1]) && (grid[i][0] === grid[i][2])) {
-    //                     return true;
-    //                 }
-    //             }
-    //         }
-    //         for (let j = 0; j < 3; j++) {
-    //             if (grid[0][j]) {
-    //                 if ((grid[0][j] === grid[1][j]) && (grid[0][j] === grid[2][j])) {
-    //                     return true;
-    //                 }
-    //             }
-    //         }
-    //         if (grid[0][0]) {
-    //             if ((grid[0][0] === grid[1][1]) && (grid[0][0] === grid[2][2])) {
-    //                 return true;
-    //             }
-    //         }
-    //         if (grid[0][2]) {
-    //             if ((grid[0][2] === grid[1][1]) && (grid[0][2] === grid[2][0])) {
-    //                 return true;
-    //             }
-    //         }
-    //         return false;
-    //     }
-
-    //     const addChildren = (childrenToAdd) => {
-    //         phantomChildren = phantomChildren.concat(childrenToAdd);
-    //     }
-
-    //     const returnGrid = () => {
-    //         return grid;
-    //     }
-
-    //     return {grid, phantomTurnOfPlayer, phantomWinner, phantomDepthOfGrid, phantomRequester, phantomChildren, returnGrid, phantomPlay, checkIfPhantomWinner,addChildren};
-    // };
 
     const phantomGridProto = {
         phantomDepth : 0,
