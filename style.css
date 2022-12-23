@@ -35,11 +35,16 @@
     justify-items: center;
     align-items: center;
     font-size: var(--mark-size);
+    color: rgba(0,0,0, 0.1);
+    transition: color 1.5s;
+}
+
+.space.marked {
+    color: rgba(0,0,0, 1);
 }
 
 .won {
     border: var(--winning-border-width) black solid;
-    /* border-radius: calc(var(--mark-size)/2); */
     margin: calc((-1)*var(--winning-border-width));
 }
 
@@ -64,8 +69,6 @@
 .player2 {
     display: flex;
     flex-wrap: wrap;
-    /* display: grid; */
-    /* grid-template-columns: auto auto; */
     gap: var(--rail-width);
 }
 

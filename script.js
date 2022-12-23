@@ -18,9 +18,9 @@ const gameboard = (() => {
 
     const checkIfTurnOfCPU = () => {
         if (turnOfPlayer === 0 && game.player1.isCPU) {
-            _cpuPlays()
+            setTimeout(_cpuPlays,1000)
         } else if (turnOfPlayer === 1 && game.player2.isCPU) {
-            _cpuPlays()
+            setTimeout(_cpuPlays,1000)
         }
     }
 
@@ -34,11 +34,12 @@ const gameboard = (() => {
         if (!(grid[row][column])) {
             grid[row][column] = turnOfPlayer ? "O" : "X";
             spaces[row*3+column].textContent = turnOfPlayer ? "⭕" : "❌";
+            spaces[row*3+column].classList.add('marked');
             turn++;
         }
         
         thereIsAWinner = checkWinner.checkIfWinner(grid,turnOfPlayer);
-        if (!thereIsAWinner) {
+        if (!thereIsAWinner && !checkIfFull()) {
             _changePlayer();
             checkIfTurnOfCPU();
         }
@@ -50,11 +51,12 @@ const gameboard = (() => {
             if (!(grid[row][column])) {
                 grid[row][column] = turnOfPlayer ? "O" : "X";
                 spaces[row*3+column].textContent = turnOfPlayer ? "⭕" : "❌";
+                spaces[row*3+column].classList.add('marked');
                 turn++
             }
             
             thereIsAWinner = checkWinner.checkIfWinner(grid,turnOfPlayer);
-            if (!thereIsAWinner) {
+            if (!thereIsAWinner && !checkIfFull()) {
                 _changePlayer();
                 checkIfTurnOfCPU();
             }
@@ -91,6 +93,7 @@ const gameboard = (() => {
         for (let space = 0; space < 9; space++) {
             spaces[space].classList.remove("won");
             spaces[space].textContent='';
+            spaces[space].classList.remove("marked");
         }
         _addClickListeners();
         thereIsAWinner = false;
@@ -100,7 +103,21 @@ const gameboard = (() => {
         return grid;
     }
 
-    return {markWinningSpaces, removeClickListeners, restartGrid, checkIfTurnOfCPU, checkIfSpaceIsMarked, returnGrid};
+    const checkIfFull = () => {
+        let isFull = true;
+
+        for (let space = 0; space < 9; space++) {
+            let column = space % 3,
+                row = (space - column)/3;
+            if (grid[row][column] === '') {
+                isFull = false;
+            }
+        }
+
+        return isFull;
+    }
+
+    return {markWinningSpaces, removeClickListeners, restartGrid, checkIfTurnOfCPU, checkIfSpaceIsMarked, returnGrid, checkIfFull};
 })();
 
 const checkWinner = (() =>  {
@@ -204,7 +221,9 @@ const display = (() => {
         } else {
             game.player2.isCPU = false
         }
-        gameboard.checkIfTurnOfCPU();
+        if (!gameboard.checkIfFull()) {
+            gameboard.checkIfTurnOfCPU()
+        }
     }
 
     const displayWinner = (winner) => {
