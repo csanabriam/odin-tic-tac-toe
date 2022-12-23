@@ -117,5 +117,8 @@ button {
     align-content: center;
 }
 
-
-
+.instructions {
+    font-size: calc(0.5*var(--mark-size));
+    display: grid;
+    text-align: center;
+}
