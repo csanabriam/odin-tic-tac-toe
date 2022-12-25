@@ -2,6 +2,13 @@ const factorial = (n) => {
     return (n > 1) ? n * factorial(n-1) : 1;
 }
 
+const getAllIndexes = (arr, val) => {
+    var indexes = [], i;
+    for(i = 0; i < arr.length; i++)
+        if (arr[i] === val)
+            indexes.push(i);
+    return indexes;
+}
 
 const gameboard = (() => {
     let grid = [['','',''],['','',''],['','','']],
@@ -256,7 +263,15 @@ const ai = ( () => {
 
     const cpuPlays = (turnOfPlayer, turn) => {
         let [possibleDecisions, decisionsDamage] =  ai.weightPossibleMoves(Array.from(gameboard.returnGrid()),turnOfPlayer,turnOfPlayer,turn),
-            space = possibleDecisions[decisionsDamage.indexOf(Math.min(...decisionsDamage))],
+            [possibleDecisions2, decisionsDamage2] =  ai.weightPossibleMoves2(Array.from(gameboard.returnGrid()),turnOfPlayer,turnOfPlayer,turn),
+            min2 = Math.min(...decisionsDamage2),
+            goodDecisions2 = getAllIndexes(decisionsDamage2, min2);
+            goodDecisionsDamage = goodDecisions2.map(i => decisionsDamage[i]);
+            space = possibleDecisions[decisionsDamage.indexOf(Math.min(...goodDecisionsDamage))],
+        // ******* Old code where the CPU plays assuming the opponent plays random*******
+        // let [possibleDecisions, decisionsDamage] =  ai.weightPossibleMoves(Array.from(gameboard.returnGrid()),turnOfPlayer,turnOfPlayer,turn),
+        // space = possibleDecisions[decisionsDamage.indexOf(Math.min(...decisionsDamage))],
+        // **********************************************************
             column = space % 3;
             row = (space - column) / 3;
 
@@ -392,10 +407,22 @@ const ai = ( () => {
             if (phantomGrid.checkIfPhantomWinner()){
                 damage = -1;
             } else {
-                let consequences = phantomPlays(phantomGrid.grid, requester, phantomGrid.phantomTurnOfPlayer);
+                let consequences = phantomPlays(phantomGrid.grid, requester, phantomGrid.phantomTurnOfPlayer),
+                    opponent = phantomTurnOfPlayer ? 0 : 1;
+                let loosingPhantomGrids = Array(9).fill(0),
+                    winningPhantomGrids = Array(9).fill(0);
                 for (let phantom of consequences) {
-                    let opponent = phantomTurnOfPlayer ? 0 : 1;
-                    damage += phantom.winnerIs == opponent ? factorial(turnNumber)/factorial(phantom.phantomDepth)*(1/2)**(phantom.phantomDepth-turnNumber) : 0;
+                    if (phantom.winnerIs === opponent) {
+                        loosingPhantomGrids[phantom.phantomDepth-1]++
+                    } else if (phantom.winnerIs === phantomTurnOfPlayer) {
+                        winningPhantomGrids[phantom.phantomDepth-1]++
+                    }
+                }
+                // console.log(loosingPhantomGrids);
+                // console.log(winningPhantomGrids);
+                for (let phantom of consequences) {
+                    damage += phantom.winnerIs === opponent ? factorial(9-phantom.phantomDepth)/factorial(9) : 0;
+                    // damage += phantom.winnerIs == opponent ? 1/loosingPhantomGrids[phantom.phantomDepth-1]*(1/2)**(phantom.phantomDepth-turnNumber) : 0;
                 }
             }
             decisionsDamage.push(damage);
@@ -404,7 +431,49 @@ const ai = ( () => {
         return [possibleDecisions, decisionsDamage];
     }
 
-    return {cpuPlays, phantomPlays, weightPossibleMoves};
+    const weightPossibleMoves2 = (grid, requester, phantomTurnOfPlayer, turnNumber) => {
+        let possibleDecisions = [],
+            decisionsDamage = [],
+            opponent = phantomTurnOfPlayer ? 0 : 1;
+
+        for (let space = 0; space < 9; space++) {
+            let column = space % 3,
+                row = (space - column)/3;
+            if (!(grid[row][column])) {
+                possibleDecisions.push(space);
+            }
+        }
+
+        for (let space of possibleDecisions) {
+            let column = space % 3,
+                row = (space - column)/3,
+                newPhantomGrid = [];
+            for (let i = 0; i < 3; i++) {
+                newPhantomGrid.push(Array.from(grid[i]))
+            }
+            const phantomGrid = Object.assign({}, phantomGridProto, {grid: newPhantomGrid, requester, phantomTurnOfPlayer});
+            phantomGrid.phantomPlay([row,column]);
+            let damage = 0;
+            if (phantomGrid.checkIfPhantomWinner()){
+                damage = -1;
+            } else {
+                while (!phantomGrid.checkIfPhantomWinner() && !phantomGrid.checkIfFull()) {
+                    let [possibleDecisions, decisionsDamage] =  weightPossibleMoves(Array.from(phantomGrid.grid),requester,phantomGrid.phantomTurnOfPlayer,turnNumber),
+                    space = possibleDecisions[decisionsDamage.indexOf(Math.min(...decisionsDamage))],
+                    phantomColumn = space % 3,
+                    phantomRow = (space - phantomColumn) / 3;
+                    phantomGrid.phantomPlay([phantomRow,phantomColumn]);
+                }
+                phantomGrid.setDepth();
+                damage = phantomGrid.winnerIs === opponent ? 1 : 0;
+            }
+            decisionsDamage.push(damage);
+        }
+
+        return [possibleDecisions, decisionsDamage];
+    }
+
+    return {cpuPlays, phantomPlays, weightPossibleMoves, weightPossibleMoves2};
 })()
 
 const game = ( () => {
