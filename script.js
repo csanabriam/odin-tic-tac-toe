@@ -262,12 +262,16 @@ const ai = ( () => {
     }
 
     const cpuPlays = (turnOfPlayer, turn) => {
-        let [possibleDecisions, decisionsDamage] =  ai.weightPossibleMoves(Array.from(gameboard.returnGrid()),turnOfPlayer,turnOfPlayer,turn),
+        let [possibleDecisions, decisionsDamage, decisionsAdvantage] =  ai.weightPossibleMoves(Array.from(gameboard.returnGrid()),turnOfPlayer,turnOfPlayer,turn),
             [possibleDecisions2, decisionsDamage2] =  ai.weightPossibleMoves2(Array.from(gameboard.returnGrid()),turnOfPlayer,turnOfPlayer,turn),
             min2 = Math.min(...decisionsDamage2),
-            goodDecisions2 = getAllIndexes(decisionsDamage2, min2);
-            goodDecisionsDamage = goodDecisions2.map(i => decisionsDamage[i]);
-            space = possibleDecisions[decisionsDamage.indexOf(Math.min(...goodDecisionsDamage))],
+            goodDecisions2 = getAllIndexes(decisionsDamage2, min2),
+            goodDecisionsDamage = goodDecisions2.map(i => decisionsDamage[i]),
+            min1 = Math.min(...goodDecisionsDamage),
+            bestDecisions = getAllIndexes(decisionsDamage,min1);
+            bestDecisionsAdvantage = bestDecisions.map(i => decisionsAdvantage[i]),
+            bestPossibleDecisions = bestDecisions.map(i => possibleDecisions[i]),
+            space = bestPossibleDecisions[bestDecisionsAdvantage.indexOf(Math.max(...bestDecisionsAdvantage))],
         // ******* Old code where the CPU plays assuming the opponent plays random*******
         // let [possibleDecisions, decisionsDamage] =  ai.weightPossibleMoves(Array.from(gameboard.returnGrid()),turnOfPlayer,turnOfPlayer,turn),
         // space = possibleDecisions[decisionsDamage.indexOf(Math.min(...decisionsDamage))],
@@ -384,7 +388,8 @@ const ai = ( () => {
 
     const weightPossibleMoves = (grid, requester, phantomTurnOfPlayer, turnNumber) => {
         let possibleDecisions = [],
-            decisionsDamage = [];
+            decisionsDamage = [],
+            decisionsAdvantage = [];
 
         for (let space = 0; space < 9; space++) {
             let column = space % 3,
@@ -403,32 +408,35 @@ const ai = ( () => {
             }
             const phantomGrid = Object.assign({}, phantomGridProto, {grid: newPhantomGrid, requester, phantomTurnOfPlayer});
             phantomGrid.phantomPlay([row,column]);
-            let damage = 0;
+            let damage = 0,
+                advantage = 0;
             if (phantomGrid.checkIfPhantomWinner()){
                 damage = -1;
+                advantage = 1;
             } else {
                 let consequences = phantomPlays(phantomGrid.grid, requester, phantomGrid.phantomTurnOfPlayer),
                     opponent = phantomTurnOfPlayer ? 0 : 1;
                 let loosingPhantomGrids = Array(9).fill(0),
                     winningPhantomGrids = Array(9).fill(0);
-                for (let phantom of consequences) {
-                    if (phantom.winnerIs === opponent) {
-                        loosingPhantomGrids[phantom.phantomDepth-1]++
-                    } else if (phantom.winnerIs === phantomTurnOfPlayer) {
-                        winningPhantomGrids[phantom.phantomDepth-1]++
-                    }
-                }
+                // for (let phantom of consequences) {
+                //     if (phantom.winnerIs === opponent) {
+                //         loosingPhantomGrids[phantom.phantomDepth-1]++
+                //     } else if (phantom.winnerIs === phantomTurnOfPlayer) {
+                //         winningPhantomGrids[phantom.phantomDepth-1]++
+                //     }
+                // }
                 // console.log(loosingPhantomGrids);
                 // console.log(winningPhantomGrids);
                 for (let phantom of consequences) {
                     damage += phantom.winnerIs === opponent ? factorial(9-phantom.phantomDepth)/factorial(9) : 0;
+                    advantage += phantom.winnerIs === phantomTurnOfPlayer ? factorial(9-phantom.phantomDepth)/factorial(9) : 0;
                     // damage += phantom.winnerIs == opponent ? 1/loosingPhantomGrids[phantom.phantomDepth-1]*(1/2)**(phantom.phantomDepth-turnNumber) : 0;
                 }
             }
             decisionsDamage.push(damage);
+            decisionsAdvantage.push(advantage);
         }
-
-        return [possibleDecisions, decisionsDamage];
+        return [possibleDecisions, decisionsDamage, decisionsAdvantage];
     }
 
     const weightPossibleMoves2 = (grid, requester, phantomTurnOfPlayer, turnNumber) => {
@@ -458,11 +466,17 @@ const ai = ( () => {
                 damage = -1;
             } else {
                 while (!phantomGrid.checkIfPhantomWinner() && !phantomGrid.checkIfFull()) {
-                    let [possibleDecisions, decisionsDamage] =  weightPossibleMoves(Array.from(phantomGrid.grid),requester,phantomGrid.phantomTurnOfPlayer,turnNumber),
-                    space = possibleDecisions[decisionsDamage.indexOf(Math.min(...decisionsDamage))],
-                    phantomColumn = space % 3,
-                    phantomRow = (space - phantomColumn) / 3;
-                    phantomGrid.phantomPlay([phantomRow,phantomColumn]);
+                    let [possibleDecisions, decisionsDamage, decisionsAdvantage] =  weightPossibleMoves(Array.from(phantomGrid.grid),requester,phantomGrid.phantomTurnOfPlayer,turnNumber),
+                        min1 = Math.min(...decisionsDamage),
+                        bestDecisions = getAllIndexes(decisionsDamage,min1),
+                        bestPossibleDecisions = bestDecisions.map(i => possibleDecisions[i]),
+                        bestDecisionsAdvantage = bestDecisions.map(i => decisionsAdvantage[i]),
+                        space = bestPossibleDecisions[bestDecisionsAdvantage.indexOf(Math.max(...bestDecisionsAdvantage))],
+                        space2 = possibleDecisions[decisionsDamage.indexOf(Math.min(...decisionsDamage))],
+                        // space = possibleDecisions[decisionsDamage.indexOf(Math.min(...decisionsDamage))],
+                        phantomColumn = space % 3,
+                        phantomRow = (space - phantomColumn) / 3;
+                        phantomGrid.phantomPlay([phantomRow,phantomColumn]);
                 }
                 phantomGrid.setDepth();
                 damage = phantomGrid.winnerIs === opponent ? 1 : 0;

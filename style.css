@@ -122,3 +122,11 @@ button {
     display: grid;
     text-align: center;
 }
+
+ul {
+    list-style: none;
+}
+
+.subinstructions {
+    font-size: calc(0.4*var(--mark-size));
+}
