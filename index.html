@@ -1,55 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
     <title>Tic-tac-toe</title>
-</head>
-<body>
+  </head>
+  <body>
     <header>
-        <form class="header" action="" method="post">
-            <div class="player1">
-                <input type="text" id="player1" name="player1">
-                <label for="player1">❌</label>
-            </div>
-            <div class="vs">vs</div>
-            <div class="player2">
-                <label for="player2">⭕</label>
-                <input type="text" id="player2" name="player2">
-            </div>
-        </form>
+      <form class="header" action="" method="post">
+        <div class="player1">
+          <input type="text" id="player1" name="player1" />
+          <label for="player1">❌</label>
+        </div>
+        <div class="vs">vs</div>
+        <div class="player2">
+          <label for="player2">⭕</label>
+          <input type="text" id="player2" name="player2" />
+        </div>
+      </form>
     </header>
     <div class="container">
-        <div class="board">
-            <div class="row">
-                <div class="space"></div>
-                <div class="space"></div>
-                <div class="space"></div>
-            </div>
-            <div class="row">
-                <div class="space"></div>
-                <div class="space"></div>
-                <div class="space"></div>
-            </div>
-            <div class="row">
-                <div class="space"></div>
-                <div class="space"></div>
-                <div class="space"></div>
-            </div>
+      <div class="board">
+        <div class="row">
+          <div class="space"></div>
+          <div class="space"></div>
+          <div class="space"></div>
         </div>
+        <div class="row">
+          <div class="space"></div>
+          <div class="space"></div>
+          <div class="space"></div>
+        </div>
+        <div class="row">
+          <div class="space"></div>
+          <div class="space"></div>
+          <div class="space"></div>
+        </div>
+      </div>
     </div>
     <footer>
-        <button>START / RESTART</button>
-        <div class="display"></div>
-        <div class="instructions">
-            <ul>
-                <li>Enter 'CPU' in a player's name to hand the control to the computer.</li>
-                <li class="subinstructions">(Enter 'rndCPU' to set the computer to play randomly, or 'optCPU' to set the computer to play optimally.)</li>
-            </ul>
-        </div>
+      <button>START / RESTART</button>
+      <div class="display"></div>
+      <div class="instructions">
+        <ul>
+          <li>
+            Enter 'CPU' in a player's name to hand the control to the computer.
+          </li>
+          <li class="subinstructions">
+            (Enter 'rndCPU' to set the computer to play randomly, or 'optCPU' to
+            set the computer to play optimally.)
+          </li>
+        </ul>
+      </div>
     </footer>
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
