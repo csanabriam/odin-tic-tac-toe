@@ -18,25 +18,25 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-It's common to code the AI for tic-tac-toe using a <a href="https://en.wikipedia.org/wiki/Game_tree">game tree</a>. In this project we take a different approach.
+The most common way to code the AI for tic-tac-toe is using a <a href="https://en.wikipedia.org/wiki/Game_tree">game tree</a>. In this project we take a different approach.
 
-Assume that, given a playing strategy S, for every possible play we know the probability of lossing if every player uses strategy S after this play. With this assumption, we define inductively different playing strategies Sn.
+Assume that, given a playing strategy S, we can compute the probability of loosing for every possible play, supposing that each player will be using strategy S after this play. With this assumption, we define inductively different playing strategies S_n.
 
 <ul>
-  <li><u>Base case</u>: In strategy S0 the player plays randomly.</li> 
-  <li><u>Inductive step</u>: Assume we have defined a strategy Sn. In strategy S{n+1} the player plays so that it minimises the probability of lossing assuming that every player will use strategy Sn after this play.</li>
+  <li><u>Base case</u>: In strategy S_0 the player plays randomly.</li> 
+  <li><u>Inductive step</u>: Assume we have defined a strategy S_n. In strategy S_{n+1} the player plays so that it minimizes the probability of loosing assuming that each player will use strategy S_n after this play.</li>
 </ul>
 
-The project objective is to see whether Sn, for some n, defines an optimal strategy in tic-tac-toe. It turns out S2 is optimal.
+The project objective is to see whether S_n, for some n, defines an optimal strategy in tic-tac-toe. It turns out that S_2 is optimal.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
 
 ## Getting Started
 
- Open <a href="https://csanabriam.github.io/tic-tac-toe/">`index.html`</a> in a browser. Click on START/RESTART and enter `rndCPU`, `CPU` or `optCPU` on a player's name whether you want the CPU to play with strategy S0, S1 or S2.
+ Open <a href="https://csanabriam.github.io/tic-tac-toe/">`index.html`</a> in a browser. Click on START/RESTART and enter `rndCPU`, `CPU` or `optCPU` on a player's name whether you want the CPU to play with strategy S_0, S_1 or S_2.
  
- In `script.js` the functions `ai.weightPossibleMoves` and `ai.weightPossibleMoves2` define strategies S1 and S2.
+ In `script.js` the functions `ai.weightPossibleMoves` and `ai.weightPossibleMoves2` define strategies S_1 and S_2.
 
 
 <!-- CONTRIBUTING -->
